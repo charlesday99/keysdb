@@ -12,7 +12,11 @@ class Keys():
     def __init__(self, host, web_port=80, sub_port=4000):
         self.host = host
         self.subscribe_port = sub_port
-        self.base_url = "http://{}:{}/key/".format(host, web_port)
+
+        if web_port == "https":
+            self.base_url = "https://{}/key/".format(host)
+        else:
+            self.base_url = "http://{}:{}/key/".format(host, web_port)
         
     def get(self, key):
         response = requests.get(self.base_url + key)
@@ -45,23 +49,9 @@ class Keys():
             return True
 
     def subscribe(self, key, callback):
-        if key in self.streams:
-            self.streams[key].addCallback(callback)
-        else:
-            t = SubscriberThread(key,self.host,self.subscribe_port,callback)
-            t.start()
-            self.streams[key] = t
-
-    def unsubscribe(self, key, callback):
-        if key in self.streams:
-            self.streams[key].removeCallback(callback)
-
-            if len(self.streams[key].getCallbacks()) == 0:
-                self.streams[key].stop()
-                del self.streams[key]
-        else:
-            raise KeyError("Key was not found current subscribe streams.")
-        
+        t = SubscriberThread(key,self.host,self.subscribe_port,callback)
+        t.start()
+        return t        
         
 class SubscriberThread(Thread):
     def __init__(self,key,host,port,callback):
@@ -69,46 +59,29 @@ class SubscriberThread(Thread):
         self.key = key
         self.host = host
         self.port = port
-        self.callbacks = [callback]
+        self.callback = callback
+        
         self.running = True
-
-    def addCallback(self, callback):
-        self.callbacks.append(callback)
-
-    def removeCallback(self, callback):
-        for current_callback in self.callbacks:
-            if current_callback is callback:
-                self.callbacks.remove(callback)
-
-    def getCallbacks(self):
-        return self.callbacks
+        self.daemon = True
         
     def run(self):
-        while self.running:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-            try:
-                s.connect((self.host, self.port))
-            except:
-                print("Failed to connect, sleeping for 10 secs...")
-                time.sleep(10)
-                continue
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.connect((self.host, self.port))
             
-            self.connected = True
-            s.sendall(str.encode(self.key))
+        self.s.sendall(str.encode(self.key))
 
-            while self.connected:
-                try:
-                    data = s.recv(1024).decode("utf-8")
+        while self.running:
+            try:
+                data = self.s.recv(1024).decode("utf-8")
+                self.callback(data)
+            except:
+                print("Connection to server closed!")
+                break
 
-                    for callback in self.callbacks:
-                        callback(data)
-                except:
-                    self.connected = False
-
-        s.close()
+        self.stop()
 
     def stop(self):
-        self.connected = False
+        self.s.close()
+        self._is_running = False
         self.running = False
 

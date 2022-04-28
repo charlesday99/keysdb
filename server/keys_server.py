@@ -2,6 +2,7 @@ from threading import Thread
 import sqlite3
 import socket
 import queue
+import time
 
 
 # Global Variables
@@ -29,10 +30,12 @@ class KeysDB:
         s.bind(('', 4000))
         s.listen(5)
 
-        # Start connections server
         self.threads = []
-        server_thread = Thread(target=self.connectionsServer,args=(s,)).start()
-        print("Started connections server...")
+        self.running = True
+        # Start connections server
+        self.server_thread = Thread(target=self.connectionsServer,args=(s,)).start()
+        # Start thread cleaner
+        self.cleaner_thread = Thread(target=self.cleanerThread).start()
 
 
     def setValue(self, key, value): #POST, PUT
@@ -92,8 +95,17 @@ class KeysDB:
             thread.processKey(key, value)
 
 
+    def cleanerThread(self):
+        print("Started thread cleaner...")
+        while self.running:
+            for thread in self.threads:
+                thread.queue.put("<Ping from Server>")
+            time.sleep(300)
+
+
     def connectionsServer(self, s):
-        while True:
+        print("Started connections server...")
+        while self.running:
             conn, addr = s.accept()
             print('Got connection from', addr)
 
@@ -101,7 +113,9 @@ class KeysDB:
             t.start()
             self.threads.append(t)
 
+
     def __exit__(self):
+        self.running = False
         for thread in self.threads:
             thread.stop()
             thread.join()
@@ -115,7 +129,9 @@ class SubscriberThread(Thread):
         self.queue = queue.Queue()
         self.threads = threads
         self.key = "default"
-        self.loop = True
+
+        self.running = True
+        self.daemon = True
 
     def processKey(self, key, value):
         if key == self.key:
@@ -125,20 +141,19 @@ class SubscriberThread(Thread):
         self.key = self.conn.recv(1024).decode("utf-8")
         print("Client subscribed too:", self.key)
 
-        while self.loop:
+        while self.running:
             value = self.queue.get()
 
             try:
                 self.conn.sendall(str.encode(value))
             except:
-                print("Client closed connection.")
+                print("Client closed subscription connection.")
                 self.conn.close()
                 self.threads.remove(self)
                 self._is_running = False
                 break
 
     def stop(self):
-        print("Thread told to stop.")
-        self.loop = False
+        self.running = False
         self.conn.close()
         self._is_running = False
