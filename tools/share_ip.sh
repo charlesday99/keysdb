@@ -5,8 +5,8 @@ post_to_keysdb () {
 # A tool to update the KeysDB with your interal & external IP
 # Example cron job:
 #
-# 3 AM: Update shared IP
-# 0 3 * * * /var/www/keysdb/tools/share_ip.sh
+# 	# 3 AM: Update shared IP
+# 	0 3 * * * /var/www/keysdb/tools/share_ip.sh
 
 post_to_keysdb "$(hostname)-external" "$(curl ipinfo.io/ip)"
 post_to_keysdb "$(hostname)-internal" "$(hostname -I | awk '{print $1}')"
