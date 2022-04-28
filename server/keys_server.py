@@ -133,6 +133,9 @@ class SubscriberThread(Thread):
         self.running = True
         self.daemon = True
 
+        self.running = True
+        self.daemon = True
+
     def processKey(self, key, value):
         if key == self.key:
             self.queue.put(value)
