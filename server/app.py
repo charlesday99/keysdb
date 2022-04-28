@@ -1,4 +1,4 @@
-from flask import redirect, url_for, render_template, abort, send_from_directory, safe_join, request, jsonify, send_file
+from flask import redirect, url_for, render_template, abort, send_from_directory, request, jsonify, send_file
 from flask import Flask
 
 from gevent.pywsgi import WSGIServer
@@ -101,6 +101,14 @@ def favicon():
 # Start point
 if __name__ == "__main__":
     print("Operating system: {}".format(os.name))
-    http_server = WSGIServer(('0.0.0.0', 8080), app)
-    print("Loaded as HTTP Server on port 8080, running forever:")
-    http_server.serve_forever()
+    
+    if os.name == "posix":
+        #Linux, run on port 8080
+        http_server = WSGIServer(('0.0.0.0', 8080), app)
+        print("Loaded as HTTP Server on port 8080, running forever:")
+        http_server.serve_forever()
+    else:
+        #Windows, run on port 80
+        http_server = WSGIServer(('0.0.0.0', 80), app)
+        print("Loaded as HTTP Server on port 80, running forever:")
+        http_server.serve_forever()
