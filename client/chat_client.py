@@ -3,16 +3,26 @@ from keys_client import Keys
 def callback(result):
     print(result)
 
-if "c" in input("Is the server local or cloud? "):
-    keysDB = Keys("178.62.83.212", 8080)
-else:
-    keysDB = Keys("localhost", 80)
+server = input("Is the server local, pi or cloud? ")
 
+if server[0] == "l":
+    keysDB = Keys("localhost", 80)
+elif server[0] == "p":
+    keysDB = Keys("192.168.0.202", 8080)
+else:
+    keysDB = Keys("db.charlieday.dev", "https")
+    
 room = input("Enter the room name: ")
 username = input("Enter your username: ")
 
-keysDB.subscribe(room,callback)
+t = keysDB.subscribe(room,callback)
 keysDB.set(room, username + " has connected!")
 
 while True:
-    keysDB.set(room, username + ": " + input())
+    try:
+        keysDB.set(room, username + ": " + input())
+    except:
+        print("Connection error! Ending chat.")
+        t.stop()
+        break
+

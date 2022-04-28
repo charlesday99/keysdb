@@ -99,7 +99,7 @@ class KeysDB:
         print("Started thread cleaner...")
         while self.running:
             for thread in self.threads:
-                thread.queue.put("...")
+                thread.queue.put("<Ping from Server>")
             time.sleep(300)
 
 
@@ -129,7 +129,9 @@ class SubscriberThread(Thread):
         self.queue = queue.Queue()
         self.threads = threads
         self.key = "default"
-        self.loop = True
+        
+        self.running = True
+        self.daemon = True
 
     def processKey(self, key, value):
         if key == self.key:
@@ -139,20 +141,19 @@ class SubscriberThread(Thread):
         self.key = self.conn.recv(1024).decode("utf-8")
         print("Client subscribed too:", self.key)
 
-        while self.loop:
+        while self.running:
             value = self.queue.get()
 
             try:
                 self.conn.sendall(str.encode(value))
             except:
-                print("Client closed connection.")
+                print("Client closed subscription connection.")
                 self.conn.close()
                 self.threads.remove(self)
                 self._is_running = False
                 break
 
     def stop(self):
-        print("Thread told to stop.")
-        self.loop = False
+        self.running = False
         self.conn.close()
         self._is_running = False
