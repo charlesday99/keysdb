@@ -102,6 +102,9 @@ class KeysDB:
             self.threads.append(t)
 
     def __exit__(self):
+        for thread in self.threads:
+            thread.stop()
+            thread.join()
         self.conn.close()
 
 
@@ -112,6 +115,7 @@ class SubscriberThread(Thread):
         self.queue = queue.Queue()
         self.threads = threads
         self.key = "default"
+        self.loop = True
 
     def processKey(self, key, value):
         if key == self.key:
@@ -121,14 +125,20 @@ class SubscriberThread(Thread):
         self.key = self.conn.recv(1024).decode("utf-8")
         print("Client subscribed too:", self.key)
 
-        while True:
+        while self.loop:
             value = self.queue.get()
 
             try:
                 self.conn.sendall(str.encode(value))
             except:
                 print("Client closed connection.")
-                self.conn.close
+                self.conn.close()
                 self.threads.remove(self)
                 self._is_running = False
                 break
+
+    def stop(self):
+        print("Thread told to stop.")
+        self.loop = False
+        self.conn.close()
+        self._is_running = False

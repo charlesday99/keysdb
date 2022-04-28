@@ -1,0 +1,15 @@
+[Unit]
+Description=Key/Value API Service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/usr/bin/python3 /var/www/keysdb/server/app.py
+WorkingDirectory=/var/www/keysdb/server/
+
+[Install]
+WantedBy=multi-user.target
