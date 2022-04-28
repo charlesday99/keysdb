@@ -2,6 +2,7 @@ from threading import Thread
 import sqlite3
 import socket
 import queue
+import time
 
 
 # Global Variables
@@ -29,10 +30,12 @@ class KeysDB:
         s.bind(('', 4000))
         s.listen(5)
 
-        # Start connections server
         self.threads = []
-        server_thread = Thread(target=self.connectionsServer,args=(s,)).start()
-        print("Started connections server...")
+        self.running = True
+        # Start connections server
+        self.server_thread = Thread(target=self.connectionsServer,args=(s,)).start()
+        # Start thread cleaner
+        self.cleaner_thread = Thread(target=self.cleanerThread).start()
 
 
     def setValue(self, key, value): #POST, PUT
@@ -92,8 +95,17 @@ class KeysDB:
             thread.processKey(key, value)
 
 
+    def cleanerThread(self):
+        print("Started thread cleaner...")
+        while self.running:
+            for thread in self.threads:
+                thread.queue.put("...")
+            time.sleep(300)
+
+
     def connectionsServer(self, s):
-        while True:
+        print("Started connections server...")
+        while self.running:
             conn, addr = s.accept()
             print('Got connection from', addr)
 
@@ -101,7 +113,9 @@ class KeysDB:
             t.start()
             self.threads.append(t)
 
+
     def __exit__(self):
+        self.running = False
         for thread in self.threads:
             thread.stop()
             thread.join()

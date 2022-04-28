@@ -3,7 +3,10 @@ from keys_client import Keys
 def callback(result):
     print(result)
 
-keysDB = Keys("192.168.0.202", 8080)
+if "c" in input("Is the server local or cloud? "):
+    keysDB = Keys("178.62.83.212", 8080)
+else:
+    keysDB = Keys("localhost", 80)
 
 room = input("Enter the room name: ")
 username = input("Enter your username: ")
