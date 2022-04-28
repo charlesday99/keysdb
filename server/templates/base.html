@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>{% block title %}{% endblock %}</title>
+	<meta charset="utf-8">
+	<meta name="theme-color" content="#000000">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="{% block description %}{% endblock %}">
+
+	<link rel="stylesheet" href="/css/styles.css">
+	<link rel="stylesheet" href="/css/sans.css" type="text/css" charset="utf-8"/>
+	
+	{% block extra_head %}{% endblock %}
+
+	<script type="text/javascript" src="/js/utils.js"></script>
+
+	{% block extra_scripts %}{% endblock %}
+</head>
+<body>
+
+<div class='navbar'>
+	<ul>
+		<li class='name'>KeysDB</li>
+	</ul>
+</div>
+
+<div id='main'>
+	{% block content %}{% endblock %}
+</div>
+
+<script>
+	window.addEventListener("resize", mobileWidthCheck); mobileWidthCheck(); addWorker();
+</script>
+{% block final_scripts %}{% endblock %}
+</body>
+</html>

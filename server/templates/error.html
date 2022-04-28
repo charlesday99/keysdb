@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Error {{ code }} - Krominomicon{% endblock %}
+
+{% block description %}Error {{ code }} Page.{% endblock %}
+
+{% block content %}
+	<h1 class="title">Error {{ code }}:</h1>
+	<h2 class="heading">{{ about }}</h2>
+	
+	<p class="text">Sorry about that!</p>
+{% endblock %}

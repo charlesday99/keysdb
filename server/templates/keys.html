@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}KeysDB{% endblock %}
+
+{% block description %}Uno Key/Value API web interface.{% endblock %}
+
+{% block content %}
+	<h1 class="title">KeysDB Interface</h1>
+	<h2 class="heading">Controls for accessing values in the database.</h2>
+	<p class="text">Use the methods below to set, get and delete values from the shared database.</p>
+	<p class="text">URL Redirects can now be used to link to services without a static ip such as a home server. Just append '@url:' to the start of the url in the value feild, such as: '@url:http://google.com'. This will redirect any request to the key to that url.</p>
+	<p class="text">Current connections: {{ connections }}</p>
+	
+	<h2 class="heading">Set:</h2>
+	<p class="text">Enter key:</p>
+	<input type="text" id="set_key" value="">
+	<p class="text">Enter value:</p>
+	<input type="text" id="set_value" value="">
+	<button type="button" onclick="set(document.getElementById('set_value').value,document.getElementById('set_key').value)">Submit</button>
+	<pre contenteditable="true" class="code" spellcheck="false"><code id="set_result">...</code></pre>
+	
+	<h2 class="heading">Get:</h2>
+	<p class="text">Enter key:</p>
+	<input type="text" id="get_key" value="">
+	<button type="button" onclick="get(document.getElementById('get_key').value)">Submit</button>
+	<pre contenteditable="true" class="code" spellcheck="false"><code id="get_result">...</code></pre>
+	
+	<h2 class="heading">Delete:</h2>
+	<p class="text">Enter key:</p>
+	<input type="text" id="del_key" value="">
+	<button type="button" onclick="del(document.getElementById('del_key').value)">Submit</button>
+	<pre contenteditable="true" class="code" spellcheck="false"><code id="del_result">...</code></pre>
+{% endblock %}
+
+{% block final_scripts %}
+<script>
+	window.addEventListener("resize", mobileWidthCheck); mobileWidthCheck();
+	
+	let BASE_URL = "{{ base }}key/";
+	
+	function set(input_value,key){
+		if (input_value.length > 0 && key.length > 0) {
+			fetch(BASE_URL + key,{
+				method: "POST",
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({value: input_value})
+			})
+				.then(response => response.json())
+				.then(data => {document.getElementById('set_result').innerText = JSON.stringify(data, null, 2);
+								document.getElementById('set_value').value = "";
+								document.getElementById('get_result').innerText = "...";
+								document.getElementById('del_result').innerText = "...";
+				})
+				.catch(error => {
+						document.getElementById('set_result').innerText = "Query failed.";
+						document.getElementById('set_key').value = "";
+						document.getElementById('set_value').value = "";		
+				})
+		} else {
+			document.getElementById('set_result').innerText = "Enter both a Key and a Value.";
+		}
+	}
+	
+	function get(key){
+		fetch(BASE_URL + key)
+			.then(response => response.json())
+			.then(data => {document.getElementById('get_result').innerText = JSON.stringify(data, null, 2);
+							document.getElementById('get_key').value = "";})
+			.catch(error => {
+					document.getElementById('get_result').innerText = "Query failed.";
+					document.getElementById('get_key').value = "";
+			})
+	}
+	
+	function del(key){
+		fetch(BASE_URL + key, {method:"DELETE"})
+			.then(response => response.json())
+			.then(data => {document.getElementById('del_result').innerText = JSON.stringify(data, null, 2);
+							document.getElementById('del_key').value = "";
+							document.getElementById('get_result').innerText = "...";
+							document.getElementById('set_result').innerText = "...";
+			})
+			.catch(error => {
+					document.getElementById('get_result').innerText = "Query failed.";
+					document.getElementById('del_key').value = "";
+			})
+	}
+</script>
+{% endblock %}
+</body>
+</html>
