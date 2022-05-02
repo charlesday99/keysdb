@@ -1,5 +1,5 @@
 post_to_keysdb () {
-        curl -X POST -H "Content-Type: application/json" -d '{"value":"'"$2"'"}' "https://db.charlieday.dev/key/$1"
+        curl -X POST -H "Content-Type: application/json" -d '{"value":"'"$2"'"}' "http://192.168.0.202:8080/key/$1"
 }
 
 # A tool to update the KeysDB with your interal & external IP
