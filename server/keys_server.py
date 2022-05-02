@@ -129,9 +129,6 @@ class SubscriberThread(Thread):
         self.queue = queue.Queue()
         self.threads = threads
         self.key = "default"
-        
-        self.running = True
-        self.daemon = True
 
         self.running = True
         self.daemon = True
