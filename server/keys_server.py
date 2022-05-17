@@ -55,13 +55,13 @@ class KeysDB:
         self.updateNotification(key, value)
         self.conn.commit()
 
-        return key,value
+        return key,value,modified
 
 
     def getValue(self, key): #GET
         cursor = self.conn.cursor()
         cursor.execute("SELECT * FROM Strings WHERE key = ?;",(key,))
-        
+
         return cursor.fetchone()
 
 
@@ -86,10 +86,11 @@ class KeysDB:
             return True
 
 
-    def dump(self):
+    def allKeys(self):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM Strings;")
-        return cursor.fetchall()
+        cursor.execute("SELECT key FROM Strings;")
+
+        return [item for t in cursor.fetchall() for item in t]
 
 
     def getConnections(self):

@@ -26,6 +26,12 @@ def start_page():
     )
 
 
+# Return all of the keys
+@app.route('/dump')
+def dump():
+    return jsonify(KeysDB.allKeys())
+
+
 # Key-Value Database route and logic
 @app.route('/key/<string:key>', methods=["POST", "GET", "PUT", "DELETE"])
 def keys(key):
@@ -53,11 +59,11 @@ def keys(key):
                 result = KeysDB.setValue(key, value)
                 return jsonify(key=result[0], value=result[1], modified=result[2], status="OK", action=request.method)
             else:
-                return jsonify(status="ERROR", message="Value entered is too long. Please enter a value less then 1000 characters.", key=key, action=request.method), 400
+                return jsonify(status="ERROR", message="Value entered is too long. Please enter a value less then 1000 characters.", key=key, action=request.method)
         else:
-            return jsonify(status="ERROR", message="No value submitted. Please enter both a Key and a Value.", key=key, action=request.method), 400
+            return jsonify(status="ERROR", message="No value submitted. Please enter both a Key and a Value.", key=key, action=request.method)
         
-    return jsonify(status="ERROR", message="Unsupported HTTP Method. Please use either PUT, POST, GET or DELETE.", key=key, action="UNKNOWN"), 400
+    return jsonify(status="ERROR", message="Unsupported HTTP Method. Please use either PUT, POST, GET or DELETE.", key=key, action="UNKNOWN")
 
 
 # Handle 400 Error
