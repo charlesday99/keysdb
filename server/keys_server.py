@@ -18,7 +18,7 @@ class KeysDB:
 
         # Checks if the table exists and creates one if needed
         if cursor.execute('SELECT tbl_name FROM "main".sqlite_master;').fetchone() == None:
-            cursor.execute('CREATE TABLE "Strings" ("key" TEXT NOT NULL UNIQUE,"value" TEXT, PRIMARY KEY("key"));')
+            cursor.execute('CREATE TABLE "Strings" ("key" TEXT NOT NULL UNIQUE,"value" TEXT,"modified" INTEGER, PRIMARY KEY("key"));')
             print("Created new database at '{}',".format(file_path))
 
         # Commit & close database connection
@@ -33,18 +33,24 @@ class KeysDB:
         self.threads = []
         self.running = True
         # Start connections server
-        self.server_thread = Thread(target=self.connectionsServer,args=(s,)).start()
+        self.server_thread = Thread(target=self.connectionsServer,args=(s,))
+        self.server_thread.setDaemon(True)
+        self.server_thread.start()
+        
         # Start thread cleaner
-        self.cleaner_thread = Thread(target=self.cleanerThread).start()
+        self.cleaner_thread = Thread(target=self.cleanerThread)
+        self.cleaner_thread.setDaemon(True)
+        self.cleaner_thread.start()
 
 
     def setValue(self, key, value): #POST, PUT
         cursor = self.conn.cursor()
+        modified = int(time.time())
 
         if self.hasKey(key):
-            cursor.execute("UPDATE Strings SET value = ? WHERE key = ?", (value,key))
+            cursor.execute("UPDATE Strings SET value = ?, modified = ? WHERE key = ?", (value,modified,key))
         else:
-            cursor.execute("INSERT INTO Strings VALUES (?,?)",(key,value))
+            cursor.execute("INSERT INTO Strings VALUES (?,?,?)",(key,value,modified))
 
         self.updateNotification(key, value)
         self.conn.commit()
@@ -110,6 +116,7 @@ class KeysDB:
             print('Got connection from', addr)
 
             t = SubscriberThread(conn, self.threads)
+            t.setDaemon(True)
             t.start()
             self.threads.append(t)
 

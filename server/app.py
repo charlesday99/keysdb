@@ -35,7 +35,7 @@ def keys(key):
             if result[1][:5] == "@url:":
                 return redirect(result[1][5:],code=302)
             else:
-                return jsonify(key=result[0], value=result[1], action="GET", status="OK")
+                return jsonify(key=result[0], value=result[1], modified=result[2], action="GET", status="OK")
         else:
             return jsonify(status="ERROR", key=key, action="GET", message="Key not found."), 404
 
@@ -51,7 +51,7 @@ def keys(key):
         if value != None:
             if len(value) <= keys_server.MAX_LENGTH:
                 result = KeysDB.setValue(key, value)
-                return jsonify(key=result[0], value=result[1], status="OK", action=request.method)
+                return jsonify(key=result[0], value=result[1], modified=result[2], status="OK", action=request.method)
             else:
                 return jsonify(status="ERROR", message="Value entered is too long. Please enter a value less then 1000 characters.", key=key, action=request.method), 400
         else:

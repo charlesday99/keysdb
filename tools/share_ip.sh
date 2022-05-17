@@ -1,3 +1,5 @@
+#!/bin/bash
+
 post_to_keysdb () {
         curl -X POST -H "Content-Type: application/json" -d '{"value":"'"$2"'"}' "http://192.168.0.202:8080/key/$1"
 }

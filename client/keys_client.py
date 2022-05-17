@@ -50,7 +50,9 @@ class Keys():
 
     def subscribe(self, key, callback):
         t = SubscriberThread(key,self.host,self.subscribe_port,callback)
+        t.setDaemon(True)
         t.start()
+        
         return t        
         
 class SubscriberThread(Thread):
