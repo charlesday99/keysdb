@@ -13,7 +13,7 @@ class Keys():
         self.host = host
         self.subscribe_port = sub_port
 
-        if web_port == "https":
+        if web_port == 443:
             self.base_url = "https://{}/key/".format(host)
         else:
             self.base_url = "http://{}:{}/key/".format(host, web_port)

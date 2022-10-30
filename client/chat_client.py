@@ -3,12 +3,7 @@ from keys_client import Keys
 def callback(result):
     print(result)
 
-server = input("Is the server local or remote? ")
-
-if server[0] == "l":
-    keysDB = Keys("localhost", 80)
-else:
-    keysDB = Keys("192.168.0.202", 8080)
+keysDB = Keys("keys.iterator.me", web_port=443)
     
 room = input("Enter the room name: ")
 username = input("Enter your username: ")

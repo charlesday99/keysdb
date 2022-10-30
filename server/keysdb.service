@@ -7,7 +7,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-User=root
+User=charles
 ExecStart=/usr/bin/python3 /var/www/keysdb/server/app.py
 WorkingDirectory=/var/www/keysdb/server/
 
