@@ -107,7 +107,7 @@ class KeysDB:
         while self.running:
             for thread in self.threads:
                 thread.queue.put("<Ping from Server>")
-            time.sleep(300)
+            time.sleep(600)
 
 
     def connectionsServer(self, s):
@@ -146,20 +146,18 @@ class SubscriberThread(Thread):
             self.queue.put(value)
 
     def run(self):
-        self.key = self.conn.recv(1024).decode("utf-8")
-        print("Client subscribed too:", self.key)
+        try:
+            self.key = self.conn.recv(1024).decode("utf-8")
+            print("Client subscribed:", self.key)
 
-        while self.running:
-            value = self.queue.get()
-
-            try:
+            while self.running:
+                value = self.queue.get()
                 self.conn.sendall(str.encode(value))
-            except:
-                print("Client closed subscription connection.")
-                self.conn.close()
-                self.threads.remove(self)
-                self._is_running = False
-                break
+        except:
+            print("Client closed subscription:", self.key)
+            self.conn.close()
+            self.threads.remove(self)
+            self._is_running = False
 
     def stop(self):
         self.running = False
